@@ -28,6 +28,7 @@ class MyJotsWindow (KMainWindow):
         
         self.createActions()
         self.createLayout()
+        self.connectSignals()
         self.loadNotes()
 
     def loadNotes(self):
