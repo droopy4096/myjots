@@ -8,9 +8,14 @@ from PyQt4 import QtCore
 
 
 class Note:
+    fileinfo=None
+    parent=None
+    
     def __init__(self, fileinfo,parent=None):
         self.fileinfo=fileinfo
         self.parent=parent
+        if not self.fileinfo.exists():
+            self.touch()
         
     def __str__(self):
         return str(self.fileinfo.filePath())
@@ -18,14 +23,14 @@ class Note:
     def delete(self):
         pass
     
-    def create(path):
-        """Static method for creating on-disk Nodes"""
+    def touch(self):
+        """method for creating NEW on-disk Nodes similar to UNIX touch command"""
         pass
         
     
 class Node(Note):
 
-    # dictionary of tuples: child[path]=(fileInfo,Note|Node)
+    # dictionary of No[td]es: child[path]=(fileInfo,Note|Node)
     children=None
     
     def __init__(self, path,parent=None):
@@ -44,11 +49,11 @@ class Node(Note):
             self.add(fileinfo=cf)
         
     def __str__(self):
-        return str(self.dir.path())+"("+",".join([str(c[1]) for c in self.children.values()])+")"
+        return str(self.dir.path())+"("+",".join([str(c) for c in self.children.values()])+")"
         
     def createNote(self,filepath,filepath_list=None):
         ##TODO this needs more work - it probably doesn't even work
-        fi=QFileInfo(filepath)
+        fi=QtCore.QFileInfo(filepath)
         if fi.path() == self.dir.path():
             self._createNode(self,filepath)
         else:
@@ -71,14 +76,15 @@ class Node(Note):
                 else:
                     # we need to look elsewhere: in children
                     for c in self.children.values():
-                        if c[0].isDir():
-                            c[1].createNote(filepath)
+                        if c.fileinfo.isDir():
+                            c.createNote(filepath)
 
     def _createNote(self,nodename):
         """create new Node"""
         nodepath=self.dir.filePath(nodename)
-        Node.create(nodepath)
-        self.add(path=nodepath)
+        fi=QtCore.QFileInfo(nodepath)
+        self.children[fi.fileName()]=(fi,Note(fi,parent=self))
+        # self.add(fileinfo=fi)
 
     def add(self,path=None,fileinfo=None):
         """Adds existing child either by path or by fileinfo"""
@@ -89,9 +95,9 @@ class Node(Note):
         else:
             raise "Either path or FileInfo needs to be specified in Node::add call"
         if fi.isFile():
-            self.children[fi.fileName()]=(fi,Note(fi,parent=self))
+            self.children[fi.fileName()]=Note(fi,parent=self)
         elif fi.isDir():
-            self.children[fi.fileName()]=(fi,Node(fi.filePath(),parent=self))
+            self.children[fi.fileName()]=Node(fi.filePath(),parent=self)
 
     def delete(self,fileinfo):
         if fileinfo.path()==self.dir.path():
