@@ -6,6 +6,11 @@ Created on Dec 7, 2011
 
 from PyQt4 import QtCore
 
+import docutils.core
+
+rest_settings = {'file_insertion_enabled': 0,
+                   'initial_header_level': 2,
+                            'raw_enabled': 0, }
 
 class Note:
     fileinfo=None
@@ -23,6 +28,16 @@ class Note:
     def delete(self):
         pass
     
+    def renderHtml(self,level=1):
+        """render reST contents of the node...and return it"""
+        f=open(self.fileinfo.filePath(),"r")
+        node_content=f.read()
+        f.close()
+        rest_settings['initial_header_level']=level
+        parts = docutils.core.publish_parts(source=node_content, writer_name='html',
+                                        settings_overrides=rest_settings)
+        return parts["html_body"]
+        
     def touch(self):
         """method for creating NEW on-disk Nodes similar to UNIX touch command"""
         pass

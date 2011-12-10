@@ -7,8 +7,10 @@ from myjots import nodes
 from PyKDE4.kdecore import *
 from PyKDE4.kdeui import *
 from PyKDE4.kparts import *
+from PyKDE4.khtml import KHTMLView, KHTMLPart
 
-from PyQt4 import QtGui, QtCore
+
+from PyQt4 import QtGui, QtCore, QtWebKit
 from PyQt4.QtCore import SIGNAL, QUrl
 
 class NotesTreeModel(QtGui.QStandardItemModel):
@@ -16,12 +18,32 @@ class NotesTreeModel(QtGui.QStandardItemModel):
         super(NotesTreeModel, self).__init__(parent)
         self.rootItem=QtGui.QStandardItem("Note")
 
+class Modes:
+    EDIT=True
+    VIEW=False
 
 class MyJotsWindow (KMainWindow):
+    
+    # Settings
+    notes_base=None
+    root_node=None
+    nav_mode=None
+    
+    # View elements
+    editor=None
+    tree=None
+    viewedit=None
+    editor_pos=None
+    viewer_pos=None
+    
+    # Actions
+    quitAct=None
+    
     def __init__ (self):
         KMainWindow.__init__(self)
 
         # self.resize(640, 480)
+        self.nav_mode=Modes.EDIT
 
         self.notes_base='/home/dimon/Notes'
         self.root_node=nodes.Node(self.notes_base)
@@ -70,7 +92,10 @@ class MyJotsWindow (KMainWindow):
         self.tree.editItem(item,n)
 
     def treeItemClicked (self, item, n):
-        ## get QFileInfo object
+        self._updateEditor(item,n)
+        self._updateViewer(item,n)
+
+    def _updateEditor(self,item,n):
         fpath=item.file_info.canonicalFilePath()
         # print fpath
         f=QtCore.QFile(fpath)
@@ -82,8 +107,23 @@ class MyJotsWindow (KMainWindow):
         # self.editor.loadResource(1,QUrl(fpath))
         self.setWindowTitle(item.text(n))
 
+    def _updateViewer(self,item,n):
+        # fetch appropriate Node
+        # and call render
+        self.htmlview.setHtml("<html><body>Hello</body></html>")
+        self.setWindowTitle(item.text(n))
+
+
     def createActions(self):
         self.quitAct=KAction("Quit",self,triggered=self.close)
+        self.toggleModeAct=KAction("Toggle",self,triggered=self.toggle)
+
+    def toggle(self):
+        self.nav_mode=not self.nav_mode
+        if self.nav_mode == Modes.EDIT:
+            self.viewedit.setCurrentIndex(self.editor_pos)
+        else:
+            self.viewedit.setCurrentIndex(self.viewer_pos)
         
     def createLayout(self):
         widget=QtGui.QWidget()
@@ -112,7 +152,15 @@ class MyJotsWindow (KMainWindow):
         searchline.addTreeWidget(self.tree)
 
 
-        self.editor=KTextEdit(hbox)
+        self.viewedit=QtGui.QStackedWidget(hbox)
+        self.editor=KTextEdit()
+        self.editor_pos=self.viewedit.addWidget(self.editor)
+        # self.viewedit.setCurrentIndex(0)
+        
+        self.htmlview=QtWebKit.QWebView()
+        self.viewer_pos=self.viewedit.addWidget(self.htmlview)
+        # self.viewedit.setCurrentIndex(1)
+        self.viewedit.setCurrentIndex(self.editor_pos)
 
 
         bottomFiller = QtGui.QWidget(vbox)
@@ -120,9 +168,7 @@ class MyJotsWindow (KMainWindow):
         filem = self.menuBar().addMenu("&File")
         filem.addAction(self.quitAct)
         editm = self.menuBar().addMenu("&Edit")
-
-
-
+        editm.addAction(self.toggleModeAct)
 
     def connectSignals(self):
         self.connect (self.tree, SIGNAL ('itemClicked (QTreeWidgetItem *, int)'),

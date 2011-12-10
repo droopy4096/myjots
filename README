@@ -1,0 +1,122 @@
+>>     heightened_security_settings = {'file_insertion_enabled': 0,
+                                    'raw_enabled': 0, }
+>> parts = docutils.core.publish_parts(source=node_content, writer_name='html',
+                                        settings_overrides=heightened_security_settings)
+>> wiki_content=wikify(parts['html_body'])
+    
+* for "settings_overrides" elements check:
+http://docutils.sourceforge.net/docs/user/config.html
+like 'initial_header_level=NN' to set initial heading level for parsed sub-documents
+
+* may need python-pygments for syntax highlighting ( 'syntax_highlight={long|short|none}' )
+
+>>> print docutils.core.publish_parts.__doc__
+
+    Set up & run a `Publisher`, and return a dictionary of document parts.
+    Dictionary keys are the names of parts, and values are Unicode strings;
+    encoding is up to the client.  For programmatic use with string I/O.
+
+    For encoded string input, be sure to set the 'input_encoding' setting to
+    the desired encoding.  Set it to 'unicode' for unencoded Unicode string
+    input.  Here's how::
+
+        publish_parts(..., settings_overrides={'input_encoding': 'unicode'})
+
+    Parameters: see `publish_programmatically`.
+    
+>>> print docutils.core.publish_programmatically.__doc__
+
+    Set up & run a `Publisher` for custom programmatic use.  Return the
+    encoded string output and the Publisher object.
+
+    Applications should not need to call this function directly.  If it does
+    seem to be necessary to call this function directly, please write to the
+    Docutils-develop mailing list
+    <http://docutils.sf.net/docs/user/mailing-lists.html#docutils-develop>.
+
+    Parameters:
+
+    * `source_class` **required**: The class for dynamically created source
+      objects.  Typically `io.FileInput` or `io.StringInput`.
+
+    * `source`: Type depends on `source_class`:
+
+      - If `source_class` is `io.FileInput`: Either a file-like object
+        (must have 'read' and 'close' methods), or ``None``
+        (`source_path` is opened).  If neither `source` nor
+        `source_path` are supplied, `sys.stdin` is used.
+
+      - If `source_class` is `io.StringInput` **required**: The input
+        string, either an encoded 8-bit string (set the
+        'input_encoding' setting to the correct encoding) or a Unicode
+        string (set the 'input_encoding' setting to 'unicode').
+
+    * `source_path`: Type depends on `source_class`:
+
+      - `io.FileInput`: Path to the input file, opened if no `source`
+        supplied.
+
+      - `io.StringInput`: Optional.  Path to the file or object that produced
+        `source`.  Only used for diagnostic output.
+
+    * `destination_class` **required**: The class for dynamically created
+      destination objects.  Typically `io.FileOutput` or `io.StringOutput`.
+
+    * `destination`: Type depends on `destination_class`:
+
+      - `io.FileOutput`: Either a file-like object (must have 'write' and
+        'close' methods), or ``None`` (`destination_path` is opened).  If
+        neither `destination` nor `destination_path` are supplied,
+        `sys.stdout` is used.
+
+      - `io.StringOutput`: Not used; pass ``None``.
+
+    * `destination_path`: Type depends on `destination_class`:
+
+      - `io.FileOutput`: Path to the output file.  Opened if no `destination`
+        supplied.
+
+      - `io.StringOutput`: Path to the file or object which will receive the
+        output; optional.  Used for determining relative paths (stylesheets,
+        source links, etc.).
+
+    * `reader`: A `docutils.readers.Reader` object.
+
+    * `reader_name`: Name or alias of the Reader class to be instantiated if
+      no `reader` supplied.
+
+    * `parser`: A `docutils.parsers.Parser` object.
+
+    * `parser_name`: Name or alias of the Parser class to be instantiated if
+      no `parser` supplied.
+
+    * `writer`: A `docutils.writers.Writer` object.
+
+    * `writer_name`: Name or alias of the Writer class to be instantiated if
+      no `writer` supplied.
+
+    * `settings`: A runtime settings (`docutils.frontend.Values`) object, for
+      dotted-attribute access to runtime settings.  It's the end result of the
+      `SettingsSpec`, config file, and option processing.  If `settings` is
+      passed, it's assumed to be complete and no further setting/config/option
+      processing is done.
+
+    * `settings_spec`: A `docutils.SettingsSpec` subclass or object.  Provides
+      extra application-specific settings definitions independently of
+      components.  In other words, the application becomes a component, and
+      its settings data is processed along with that of the other components.
+      Used only if no `settings` specified.
+
+    * `settings_overrides`: A dictionary containing application-specific
+      settings defaults that override the defaults of other components.
+      Used only if no `settings` specified.
+
+    * `config_section`: A string, the name of the configuration file section
+      for this application.  Overrides the ``config_section`` attribute
+      defined by `settings_spec`.  Used only if no `settings` specified.
+
+    * `enable_exit_status`: Boolean; enable exit status at end of processing?
+    
+
+    
+ 
